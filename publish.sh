@@ -3,9 +3,10 @@
 #
 #   ./publish.sh            secret check, copy, build into ./public
 #   ./publish.sh --serve    same, then serve a local preview on http://localhost:8080
+#   ./publish.sh --deploy   same, then deploy to Cloudflare Pages (https://western-reaches.pages.dev)
 #
 # The secret check refuses to build if any wiki page contains GM-only material.
-# Deploy (Cloudflare Pages) is not wired up yet.
+# Deploy: Cloudflare Pages project "western-reaches" (wrangler login on this machine).
 set -euo pipefail
 shopt -s globstar nullglob
 
@@ -44,5 +45,10 @@ if [ "${1:-}" = "--serve" ]; then
   npx quartz build --serve
 else
   npx quartz build
-  echo "Built into $HERE/public"
+  # Unlisted for now (Ken, 2026-10-10): keep search engines out.
+  printf 'User-agent: *\nDisallow: /\n' > "$HERE/public/robots.txt"
+  echo "Built into $HERE/public (robots.txt: noindex)"
+  if [ "${1:-}" = "--deploy" ]; then
+    npx --yes wrangler@4.149.0 pages deploy --branch main --commit-dirty=true
+  fi
 fi
