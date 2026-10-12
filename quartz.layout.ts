@@ -1,16 +1,29 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 
+// Footer credits per site (WIKI_SITE comes from publish.sh): link the game creators.
+const ARCANE_LIBRARY = { "Shadowdark RPG by The Arcane Library": "https://www.thearcanelibrary.com" }
+const FOOTER_LINKS: Record<string, Record<string, string>> = {
+  shadowdark: ARCANE_LIBRARY,
+  darkspace: {
+    "DarkSpace by DMing the World Press": "https://www.dmingtheworld.com/darkspace",
+    ...ARCANE_LIBRARY,
+  },
+}
+
+const UNOFFICIAL: Record<string, string> = {
+  shadowdark: "Unofficial fan site; not affiliated with The Arcane Library.",
+  darkspace: "Unofficial fan site; not affiliated with DMing the World Press or The Arcane Library.",
+}
+
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [],
   footer: Component.Footer({
-    links: {
-      GitHub: "https://github.com/jackyzha0/quartz",
-      "Discord Community": "https://discord.gg/cRFFHYye7t",
-    },
+    links: FOOTER_LINKS[process.env.WIKI_SITE ?? "shadowdark"] ?? {},
+    note: UNOFFICIAL[process.env.WIKI_SITE ?? "shadowdark"],
   }),
 }
 

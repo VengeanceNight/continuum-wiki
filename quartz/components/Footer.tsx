@@ -5,6 +5,7 @@ import { i18n } from "../i18n"
 
 interface Options {
   links: Record<string, string>
+  note?: string
 }
 
 export default ((opts?: Options) => {
@@ -17,6 +18,7 @@ export default ((opts?: Options) => {
           {i18n(cfg.locale).components.footer.createdWith}{" "}
           <a href="https://quartz.jzhao.xyz/">Quartz v{version}</a> © {year}
         </p>
+        {opts?.note && <p>{opts.note}</p>}
         <ul>
           {Object.entries(links).map(([text, link]) => (
             <li>
