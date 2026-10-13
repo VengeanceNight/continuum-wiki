@@ -24,6 +24,7 @@ export const sharedPageComponents: SharedLayout = {
   footer: Component.Footer({
     links: FOOTER_LINKS[process.env.WIKI_SITE ?? "shadowdark"] ?? {},
     note: UNOFFICIAL[process.env.WIKI_SITE ?? "shadowdark"],
+    mark: true,
   }),
 }
 
