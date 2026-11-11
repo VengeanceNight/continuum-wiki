@@ -5,14 +5,16 @@
 #   ./publish.sh --serve [site]     same check, then serve one site locally on http://localhost:8080 (default shadowdark)
 #   ./publish.sh --deploy           build everything, then deploy to Cloudflare Pages
 #
-# Sites: one subfolder of 80_Wiki/ per game, each its own Pages project at <site>.crystalcontinuum.org.
+# Main domain: crystalcontinuum.cc (Ken, 2026-11-10; was .org). .org and .net only redirect.
+# Sites: one subfolder of 80_Wiki/ per game, each its own Pages project at <site>.crystalcontinuum.cc.
 #   shadowdark  Shadowdark home + campaigns (Western Reaches, Wednesday one-shots)
 #   darkspace   unlinked placeholder (Ken, 2026-10-12): nothing links to it until STA wraps
 # Redirect-only projects (no content):
-#   crystalcontinuum  crystalcontinuum.org -> shadowdark.crystalcontinuum.org (until there's a hub);
-#                     crystalcontinuum.net -> crystalcontinuum.org (auto-renew off 2026-11-10, lapses 2027-10)
-#                     crystalcontinuum.cc  -> crystalcontinuum.org (302: bought 2026-11-10, may become the main domain)
-#   western-reaches   western-reaches.pages.dev -> shadowdark.crystalcontinuum.org/western-reaches
+#   crystalcontinuum  crystalcontinuum.cc -> shadowdark.crystalcontinuum.cc (302, until there's a hub);
+#                     crystalcontinuum.org / .net (bare + www) -> crystalcontinuum.cc (301)
+#   Each site's own _worker.js sends <site>.crystalcontinuum.org -> <site>.crystalcontinuum.cc (301).
+#   (.net: auto-renew off 2026-11-10, lapses ~2027-10; .org: drop or keep as a redirect, Ken's call)
+#   western-reaches   western-reaches.pages.dev -> shadowdark.crystalcontinuum.cc/western-reaches
 # The secret check refuses to build if any wiki page contains GM-only material.
 # Deploy needs wrangler logged in on this machine.
 set -euo pipefail
@@ -73,6 +75,19 @@ for site in "${SITES[@]}"; do
   WIKI_SITE="$site" npx quartz build -d "content/$site" -o "public/$site"
   # Unlisted for now (Ken, 2026-10-10): keep search engines out.
   printf 'User-agent: *\nDisallow: /\n' > "public/$site/robots.txt"
+  # Old .org hostnames redirect to .cc; everything else is served as static files.
+  cat > "public/$site/_worker.js" <<'JS'
+export default {
+  fetch(req, env) {
+    const u = new URL(req.url)
+    if (u.hostname.endsWith("crystalcontinuum.org")) {
+      u.hostname = u.hostname.replace(/crystalcontinuum\.org$/, "crystalcontinuum.cc")
+      return Response.redirect(u.toString(), 301)
+    }
+    return env.ASSETS.fetch(req)
+  },
+}
+JS
 done
 
 mkdir -p public/crystalcontinuum public/western-reaches
@@ -80,17 +95,15 @@ cat > public/crystalcontinuum/_worker.js <<'JS'
 export default {
   fetch(req) {
     const u = new URL(req.url)
-    if (u.hostname.endsWith("crystalcontinuum.net"))
-      return Response.redirect(`https://crystalcontinuum.org${u.pathname}${u.search}`, 301)
-    // Temporary (302) so browsers don't cache it, in case .cc becomes the main domain.
-    if (u.hostname.endsWith("crystalcontinuum.cc"))
-      return Response.redirect(`https://crystalcontinuum.org${u.pathname}${u.search}`, 302)
+    // Old domains (.org, .net): permanent move to the .cc equivalent.
+    if (!u.hostname.endsWith("crystalcontinuum.cc"))
+      return Response.redirect(`https://crystalcontinuum.cc${u.pathname}${u.search}`, 301)
     // No hub yet: send the bare domain to the Shadowdark site.
-    return Response.redirect(`https://shadowdark.crystalcontinuum.org${u.pathname}${u.search}`, 302)
+    return Response.redirect(`https://shadowdark.crystalcontinuum.cc${u.pathname}${u.search}`, 302)
   },
 }
 JS
-printf '/* https://shadowdark.crystalcontinuum.org/western-reaches 301\n' > public/western-reaches/_redirects
+printf '/* https://shadowdark.crystalcontinuum.cc/western-reaches 301\n' > public/western-reaches/_redirects
 echo "Built ${SITES[*]} + redirects into $HERE/public (robots.txt: noindex)"
 
 if [ "${1:-}" = "--deploy" ]; then

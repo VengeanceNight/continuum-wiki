@@ -7,7 +7,7 @@ import * as Plugin from "./quartz/plugins"
  * See https://quartz.jzhao.xyz/configuration for more information.
  */
 // One repo, one site per game (Bob, 2026-10-12). publish.sh sets WIKI_SITE.
-// Each site's content is 80_Wiki/<site>/; it deploys to <site>.crystalcontinuum.org.
+// Each site's content is 80_Wiki/<site>/; it deploys to <site>.crystalcontinuum.cc.
 // Shadowdark is black and white; Darkspace adds a single accent colour as its link colour.
 const SITES = {
   shadowdark: { title: "Shadowdark", link: "#1a1a1a", linkDark: "#e0e0e0", tert: "#707070" },
@@ -25,7 +25,7 @@ const config: QuartzConfig = {
     enablePopovers: true,
     analytics: null,
     locale: "en-US",
-    baseUrl: `${SITE}.crystalcontinuum.org`,
+    baseUrl: `${SITE}.crystalcontinuum.cc`,
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",
     theme: {
