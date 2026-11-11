@@ -10,7 +10,8 @@
 #   darkspace   unlinked placeholder (Ken, 2026-10-12): nothing links to it until STA wraps
 # Redirect-only projects (no content):
 #   crystalcontinuum  crystalcontinuum.org -> shadowdark.crystalcontinuum.org (until there's a hub);
-#                     crystalcontinuum.net -> crystalcontinuum.org
+#                     crystalcontinuum.net -> crystalcontinuum.org (auto-renew off 2026-11-10, lapses 2027-10)
+#                     crystalcontinuum.cc  -> crystalcontinuum.org (302: bought 2026-11-10, may become the main domain)
 #   western-reaches   western-reaches.pages.dev -> shadowdark.crystalcontinuum.org/western-reaches
 # The secret check refuses to build if any wiki page contains GM-only material.
 # Deploy needs wrangler logged in on this machine.
@@ -81,6 +82,9 @@ export default {
     const u = new URL(req.url)
     if (u.hostname.endsWith("crystalcontinuum.net"))
       return Response.redirect(`https://crystalcontinuum.org${u.pathname}${u.search}`, 301)
+    // Temporary (302) so browsers don't cache it, in case .cc becomes the main domain.
+    if (u.hostname.endsWith("crystalcontinuum.cc"))
+      return Response.redirect(`https://crystalcontinuum.org${u.pathname}${u.search}`, 302)
     // No hub yet: send the bare domain to the Shadowdark site.
     return Response.redirect(`https://shadowdark.crystalcontinuum.org${u.pathname}${u.search}`, 302)
   },
